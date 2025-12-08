@@ -24,9 +24,8 @@ public class TodoService {
         Todo todo = new Todo();
         todo.setTitle(title);
         todo.setDescription(description);
-        todo.setCreatedAt(LocalDateTime.now());
-        todo.setUpdatedAt(todo.getCreatedAt());
         todo.setTags(resolveTags(tagNames));
+        todo.setUpdatedAt(LocalDateTime.now());
         return todoRepository.save(todo);
     }
 
