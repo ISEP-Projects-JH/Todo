@@ -16,75 +16,46 @@ package "com.todoapp.domain" {
     Long id
     String name
   }
-
-  class DashboardStats {
-    long completedCount
-    long pendingCount
-  }
 }
 
 package "com.todoapp.repository" {
   interface TodoRepository {
     Todo save(Todo)
     java.util.Optional<Todo> findById(Long)
-    void deleteById(Long)
+    java.util.Optional<Todo> findByTitle(String)
     java.util.List<Todo> findAll()
-    long countByCompleted(boolean)
+    void deleteById(Long)
   }
 
   interface TagRepository {
     Tag save(Tag)
     java.util.Optional<Tag> findById(Long)
+    java.util.Optional<Tag> findByName(String)
     java.util.List<Tag> findAll()
   }
 }
 
 package "com.todoapp.service" {
-  class TodoService <<Service>> {
+  class TodoService {
     Todo createTodo(String title, String description, java.util.Set<String> tagNames)
-    Todo updateTodo(Long id, String title, String description, java.util.Set<String> tagNames)
-    void deleteTodo(Long id)
-    Todo markCompleted(Long id)
-    Todo markPending(Long id)
+    Todo updateTodoByTitle(String oldTitle, String newTitle, String description, java.util.Set<String> tagNames)
+    void deleteByTitle(String title)
+    Todo markCompletedByTitle(String title)
+    Todo markPendingByTitle(String title)
     java.util.List<Todo> listTodos()
-    Todo addTag(Long id, String tagName)
-    Todo removeTag(Long id, String tagName)
+    Todo addTags(String title, java.util.Set<String> tagNames)
+    Todo removeTags(String title, java.util.Set<String> tagNames)
+    int countCompleted()
+    int countPending()
+    Todo getByTitle(String title)
   }
 
-  class DashboardService <<Service>> {
-    DashboardStats getStats()
-  }
-}
-
-package "com.todoapp.web" {
-  class TodoController <<Controller>> {
-    Todo create(CreateTodoRequest)
-    Todo update(Long id, UpdateTodoRequest)
-    void delete(Long id)
-    Todo complete(Long id)
-    Todo uncomplete(Long id)
-    java.util.List<Todo> list()
-  }
-
-  class DashboardController <<Controller>> {
-    DashboardStats stats()
-  }
-
-  class CreateTodoRequest <<DTO>> {
-    String title
-    String description
-    java.util.Set<String> tags
-  }
-
-  class UpdateTodoRequest <<DTO>> {
-    String title
-    String description
-    java.util.Set<String> tags
+  class DashboardService {
+    int completedCount()
+    int pendingCount()
   }
 }
 
-TodoController --> TodoService
-DashboardController --> DashboardService
 TodoService --> TodoRepository
 TodoService --> TagRepository
 DashboardService --> TodoRepository
@@ -93,33 +64,27 @@ Todo "*" -- "*" Tag
 @enduml
 
 @startuml
-actor User
-participant TodoController
+actor Client
 participant TodoService
 participant TagRepository
 participant TodoRepository
 
-User -> TodoController : POST /todos
-TodoController -> TodoService : createTodo(title, description, tags)
-TodoService -> TagRepository : find/create tags
+Client -> TodoService : createTodo(title, description, tagNames)
+TodoService -> TagRepository : findByName(name)/save(tag)
 TodoService -> TodoRepository : save(todo)
 TodoRepository --> TodoService : todo
-TodoService --> TodoController : todo
-TodoController --> User : 201 Created
+TodoService --> Client : todo
 @enduml
 
 @startuml
-actor User
-participant TodoController
+actor Client
 participant TodoService
 participant TodoRepository
 
-User -> TodoController : POST /todos/{id}/complete
-TodoController -> TodoService : markCompleted(id)
-TodoService -> TodoRepository : findById(id)
+Client -> TodoService : markCompletedByTitle(title)
+TodoService -> TodoRepository : findByTitle(title)
 TodoRepository --> TodoService : todo
 TodoService -> Todo : markCompleted()
 TodoService -> TodoRepository : save(todo)
-TodoService --> TodoController : todo
-TodoController --> User : 200 OK
+TodoService --> Client : todo
 @enduml
