@@ -1,0 +1,125 @@
+@startuml
+package "com.todoapp.domain" {
+  class Todo {
+    Long id
+    String title
+    String description
+    boolean completed
+    java.time.LocalDateTime createdAt
+    java.time.LocalDateTime updatedAt
+    java.util.Set<Tag> tags
+    void markCompleted()
+    void markPending()
+  }
+
+  class Tag {
+    Long id
+    String name
+  }
+
+  class DashboardStats {
+    long completedCount
+    long pendingCount
+  }
+}
+
+package "com.todoapp.repository" {
+  interface TodoRepository {
+    Todo save(Todo)
+    java.util.Optional<Todo> findById(Long)
+    void deleteById(Long)
+    java.util.List<Todo> findAll()
+    long countByCompleted(boolean)
+  }
+
+  interface TagRepository {
+    Tag save(Tag)
+    java.util.Optional<Tag> findById(Long)
+    java.util.List<Tag> findAll()
+  }
+}
+
+package "com.todoapp.service" {
+  class TodoService <<Service>> {
+    Todo createTodo(String title, String description, java.util.Set<String> tagNames)
+    Todo updateTodo(Long id, String title, String description, java.util.Set<String> tagNames)
+    void deleteTodo(Long id)
+    Todo markCompleted(Long id)
+    Todo markPending(Long id)
+    java.util.List<Todo> listTodos()
+    Todo addTag(Long id, String tagName)
+    Todo removeTag(Long id, String tagName)
+  }
+
+  class DashboardService <<Service>> {
+    DashboardStats getStats()
+  }
+}
+
+package "com.todoapp.web" {
+  class TodoController <<Controller>> {
+    Todo create(CreateTodoRequest)
+    Todo update(Long id, UpdateTodoRequest)
+    void delete(Long id)
+    Todo complete(Long id)
+    Todo uncomplete(Long id)
+    java.util.List<Todo> list()
+  }
+
+  class DashboardController <<Controller>> {
+    DashboardStats stats()
+  }
+
+  class CreateTodoRequest <<DTO>> {
+    String title
+    String description
+    java.util.Set<String> tags
+  }
+
+  class UpdateTodoRequest <<DTO>> {
+    String title
+    String description
+    java.util.Set<String> tags
+  }
+}
+
+TodoController --> TodoService
+DashboardController --> DashboardService
+TodoService --> TodoRepository
+TodoService --> TagRepository
+DashboardService --> TodoRepository
+
+Todo "*" -- "*" Tag
+@enduml
+
+@startuml
+actor User
+participant TodoController
+participant TodoService
+participant TagRepository
+participant TodoRepository
+
+User -> TodoController : POST /todos
+TodoController -> TodoService : createTodo(title, description, tags)
+TodoService -> TagRepository : find/create tags
+TodoService -> TodoRepository : save(todo)
+TodoRepository --> TodoService : todo
+TodoService --> TodoController : todo
+TodoController --> User : 201 Created
+@enduml
+
+@startuml
+actor User
+participant TodoController
+participant TodoService
+participant TodoRepository
+
+User -> TodoController : POST /todos/{id}/complete
+TodoController -> TodoService : markCompleted(id)
+TodoService -> TodoRepository : findById(id)
+TodoRepository --> TodoService : todo
+TodoService -> Todo : markCompleted()
+TodoService -> TodoRepository : save(todo)
+TodoService --> TodoController : todo
+TodoController --> User : 200 OK
+@enduml
