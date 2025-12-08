@@ -1,5 +1,6 @@
 package com.todoapp.steps;
 
+import com.todoapp.domain.Tag;
 import com.todoapp.service.DashboardService;
 import com.todoapp.service.TodoService;
 import com.todoapp.repository.memory.InMemoryTagRepository;
@@ -82,7 +83,7 @@ public class Steps {
     public void task_has_tags(String title, DataTable tagsTable) {
         Todo t = todoService.getByTitle(title);
         Set<String> expected = singleColumnToSet(tagsTable);
-        Set<String> actual = t.getTags().stream().map(tag -> tag.getName()).collect(Collectors.toSet());
+        Set<String> actual = t.getTags().stream().map(Tag::getName).collect(Collectors.toSet());
         Assert.assertTrue(actual.containsAll(expected));
     }
 
@@ -90,7 +91,7 @@ public class Steps {
     public void task_does_not_have_tags(String title, DataTable tagsTable) {
         Todo t = todoService.getByTitle(title);
         Set<String> notExpected = singleColumnToSet(tagsTable);
-        Set<String> actual = t.getTags().stream().map(tag -> tag.getName()).collect(Collectors.toSet());
+        Set<String> actual = t.getTags().stream().map(Tag::getName).collect(Collectors.toSet());
         for (String tag : notExpected) {
             Assert.assertFalse(actual.contains(tag));
         }
