@@ -39,13 +39,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
       - name: Create todoapp database and user
-        run: |
-          psql -h localhost -U postgres -c "CREATE DATABASE todoapp;"
-          psql -h localhost -U postgres -c "CREATE USER todoapp WITH PASSWORD '';"
-          psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE todoapp TO todoapp;"
-
         env:
           PGPASSWORD: postgres
+        run: |
+         psql -h localhost -U postgres -c 'CREATE DATABASE todoapp;'
+         psql -h localhost -U postgres -c "CREATE USER todoapp WITH PASSWORD 'todo123';"
+         psql -h localhost -U postgres -c 'GRANT ALL PRIVILEGES ON DATABASE todoapp TO todoapp;'
+         psql -h localhost -U postgres -d todoapp -c 'ALTER SCHEMA public OWNER TO todoapp;'
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
