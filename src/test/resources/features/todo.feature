@@ -76,3 +76,17 @@ Feature: Todo core behavior
     Then I should see 2 tasks
     And dashboard completed count is 1
     And dashboard pending count is 1
+
+  Scenario: Return todo and find by id
+    When I create a task with title "Write" description "Doc" tags:
+      | work |
+    Then the last returned todo can be found by id
+    And the last returned todo's tags can be found by id
+
+  Scenario: Service counts
+    Given the following tasks exist:
+      | title | description | tags | status    |
+      | C     | c           | x    | completed |
+      | D     | d           | y    | pending   |
+    Then service completed count is 1
+    And service pending count is 1

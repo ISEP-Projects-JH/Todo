@@ -26,7 +26,14 @@ public class StepsDataBase {
     @Autowired
     private DashboardService dashboardService;
 
+    @Autowired
+    private com.todoapp.repository.TodoRepository todoRepository;
+
+    @Autowired
+    private com.todoapp.repository.TagRepository tagRepository;
+
     private int lastListCount = 0;
+    private Todo lastReturnedTodo = null;
 
     @Given("the database task list is empty")
     public void the_database_task_list_is_empty() {
@@ -57,7 +64,7 @@ public class StepsDataBase {
 
     @When("I create a database task with title {string} description {string} tags:")
     public void i_create_database_task(String title, String description, DataTable tagsTable) {
-        todoService.createTodo(title, description, singleColumnToSet(tagsTable));
+        lastReturnedTodo = todoService.createTodo(title, description, singleColumnToSet(tagsTable));
     }
 
     @Then("database task {string} exists")
@@ -109,17 +116,17 @@ public class StepsDataBase {
 
     @When("I update database task {string} to title {string} description {string} tags:")
     public void i_update_database_task(String oldTitle, String newTitle, String description, DataTable tagsTable) {
-        todoService.updateTodoByTitle(oldTitle, newTitle, description, singleColumnToSet(tagsTable));
+        lastReturnedTodo = todoService.updateTodoByTitle(oldTitle, newTitle, description, singleColumnToSet(tagsTable));
     }
 
     @When("I mark database task {string} as completed")
     public void i_mark_database_task_completed(String title) {
-        todoService.markCompletedByTitle(title);
+        lastReturnedTodo = todoService.markCompletedByTitle(title);
     }
 
     @When("I mark database task {string} as pending")
     public void i_mark_database_task_pending(String title) {
-        todoService.markPendingByTitle(title);
+        lastReturnedTodo = todoService.markPendingByTitle(title);
     }
 
     @When("I delete database task {string}")
@@ -129,12 +136,12 @@ public class StepsDataBase {
 
     @When("I add tags to database task {string}:")
     public void i_add_tags_to_database_task(String title, DataTable tagsTable) {
-        todoService.addTags(title, singleColumnToSet(tagsTable));
+        lastReturnedTodo = todoService.addTags(title, singleColumnToSet(tagsTable));
     }
 
     @When("I remove tags from database task {string}:")
     public void i_remove_tags_from_database_task(String title, DataTable tagsTable) {
-        todoService.removeTags(title, singleColumnToSet(tagsTable));
+        lastReturnedTodo = todoService.removeTags(title, singleColumnToSet(tagsTable));
     }
 
     @When("I list database tasks")
@@ -155,6 +162,32 @@ public class StepsDataBase {
     @Then("database dashboard pending count is {int}")
     public void database_dashboard_pending_count(Integer count) {
         Assert.assertEquals(count.intValue(), dashboardService.pendingCount());
+    }
+
+    @Then("database service completed count is {int}")
+    public void database_service_completed_count(Integer count) {
+        Assert.assertEquals(count.intValue(), todoService.countCompleted());
+    }
+
+    @Then("database service pending count is {int}")
+    public void database_service_pending_count(Integer count) {
+        Assert.assertEquals(count.intValue(), todoService.countPending());
+    }
+
+    @Then("the last returned database todo can be found by id")
+    public void the_last_returned_database_todo_can_be_found_by_id() {
+        Assert.assertNotNull(lastReturnedTodo);
+        Assert.assertNotNull(lastReturnedTodo.getId());
+        Assert.assertTrue(todoRepository.findById(lastReturnedTodo.getId()).isPresent());
+    }
+
+    @Then("the last returned database todo's tags can be found by id")
+    public void the_last_returned_database_todos_tags_can_be_found_by_id() {
+        Assert.assertNotNull(lastReturnedTodo);
+        for (com.todoapp.domain.Tag tag : lastReturnedTodo.getTags()) {
+            Assert.assertNotNull(tag.getId());
+            Assert.assertTrue(tagRepository.findById(tag.getId()).isPresent());
+        }
     }
 
     private Set<String> singleColumnToSet(DataTable table) {

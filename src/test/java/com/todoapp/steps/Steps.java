@@ -21,6 +21,7 @@ public class Steps {
     private final TodoService todoService = new TodoService(todoRepository, tagRepository);
     private final DashboardService dashboardService = new DashboardService(todoRepository);
     private int lastListCount = 0;
+    private Todo lastReturnedTodo = null;
 
     @Given("the task list is empty")
     public void the_task_list_is_empty() {
@@ -51,7 +52,7 @@ public class Steps {
     @When("I create a task with title {string} description {string} tags:")
     public void i_create_a_task_with_title_description_tags(String title, String description, DataTable tagsTable) {
         Set<String> tags = singleColumnToSet(tagsTable);
-        todoService.createTodo(title, description, tags);
+        lastReturnedTodo = todoService.createTodo(title, description, tags);
     }
 
     @Then("task {string} exists")
@@ -99,17 +100,17 @@ public class Steps {
 
     @When("I update task {string} to title {string} description {string} tags:")
     public void i_update_task_to(String oldTitle, String newTitle, String description, DataTable tagsTable) {
-        todoService.updateTodoByTitle(oldTitle, newTitle, description, singleColumnToSet(tagsTable));
+        lastReturnedTodo = todoService.updateTodoByTitle(oldTitle, newTitle, description, singleColumnToSet(tagsTable));
     }
 
     @When("I mark task {string} as completed")
     public void i_mark_task_as_completed(String title) {
-        todoService.markCompletedByTitle(title);
+        lastReturnedTodo = todoService.markCompletedByTitle(title);
     }
 
     @When("I mark task {string} as pending")
     public void i_mark_task_as_pending(String title) {
-        todoService.markPendingByTitle(title);
+        lastReturnedTodo = todoService.markPendingByTitle(title);
     }
 
     @When("I delete task {string}")
@@ -119,12 +120,12 @@ public class Steps {
 
     @When("I add tags to task {string}:")
     public void i_add_tags_to_task(String title, DataTable tagsTable) {
-        todoService.addTags(title, singleColumnToSet(tagsTable));
+        lastReturnedTodo = todoService.addTags(title, singleColumnToSet(tagsTable));
     }
 
     @When("I remove tags from task {string}:")
     public void i_remove_tags_from_task(String title, DataTable tagsTable) {
-        todoService.removeTags(title, singleColumnToSet(tagsTable));
+        lastReturnedTodo = todoService.removeTags(title, singleColumnToSet(tagsTable));
     }
 
     @When("I list tasks")
@@ -145,6 +146,32 @@ public class Steps {
     @Then("dashboard pending count is {int}")
     public void dashboard_pending_count_is(Integer count) {
         Assert.assertEquals(count.intValue(), dashboardService.pendingCount());
+    }
+
+    @Then("service completed count is {int}")
+    public void service_completed_count_is(Integer count) {
+        Assert.assertEquals(count.intValue(), todoService.countCompleted());
+    }
+
+    @Then("service pending count is {int}")
+    public void service_pending_count_is(Integer count) {
+        Assert.assertEquals(count.intValue(), todoService.countPending());
+    }
+
+    @Then("the last returned todo can be found by id")
+    public void the_last_returned_todo_can_be_found_by_id() {
+        Assert.assertNotNull(lastReturnedTodo);
+        Assert.assertNotNull(lastReturnedTodo.getId());
+        Assert.assertTrue(todoRepository.findById(lastReturnedTodo.getId()).isPresent());
+    }
+
+    @Then("the last returned todo's tags can be found by id")
+    public void the_last_returned_todos_tags_can_be_found_by_id() {
+        Assert.assertNotNull(lastReturnedTodo);
+        for (Tag tag : lastReturnedTodo.getTags()) {
+            Assert.assertNotNull(tag.getId());
+            Assert.assertTrue(tagRepository.findById(tag.getId()).isPresent());
+        }
     }
 
     private Set<String> singleColumnToSet(DataTable table) {

@@ -55,4 +55,4 @@ jobs:
           cache: maven
 
       - name: Run Maven tests
-        run: mvn -q -Dtest=RunCucumberTest test
+        run: mvn -Dtest=RunCucumberTest -Dcucumber.plugin=pretty test

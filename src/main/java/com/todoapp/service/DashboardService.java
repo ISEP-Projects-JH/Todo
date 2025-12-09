@@ -1,5 +1,6 @@
 package com.todoapp.service;
 
+import com.todoapp.domain.Todo;
 import com.todoapp.repository.TodoRepository;
 
 public class DashboardService {
@@ -10,7 +11,7 @@ public class DashboardService {
     }
 
     public int completedCount() {
-        return (int) todoRepository.findAll().stream().filter(t -> t.isCompleted()).count();
+        return (int) todoRepository.findAll().stream().filter(Todo::isCompleted).count();
     }
 
     public int pendingCount() {

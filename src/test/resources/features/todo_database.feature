@@ -76,3 +76,17 @@ Feature: Todo database behavior
     Then I should see 2 database tasks
     And database dashboard completed count is 1
     And database dashboard pending count is 1
+
+  Scenario: Return database todo and find by id
+    When I create a database task with title "WriteDB" description "Doc" tags:
+      | work |
+    Then the last returned database todo can be found by id
+    And the last returned database todo's tags can be found by id
+
+  Scenario: Database service counts
+    Given the following database tasks exist:
+      | title | description | tags | status    |
+      | E     | e           | x    | completed |
+      | F     | f           | y    | pending   |
+    Then database service completed count is 1
+    And database service pending count is 1
