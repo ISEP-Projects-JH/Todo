@@ -23,6 +23,11 @@ public class TodoController {
         this.dashboardService = dashboardService;
     }
 
+    @GetMapping("/ping")
+    public String ping() {
+        return "pong";
+    }
+
     @PostMapping("/todos")
     @ResponseStatus(HttpStatus.CREATED)
     public TodoResponse createTodo(@RequestBody CreateTodoRequest request) {
