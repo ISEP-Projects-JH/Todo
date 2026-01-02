@@ -1,13 +1,18 @@
 package com.todoapp.controller.dto;
 
+import com.todoapp.domain.Tag;
 import com.todoapp.domain.Todo;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class TodoResponse {
     private Long id;
     private String title;
@@ -26,7 +31,7 @@ public class TodoResponse {
         response.setCreatedAt(todo.getCreatedAt());
         response.setUpdatedAt(todo.getUpdatedAt());
         if (todo.getTags() != null) {
-            response.setTags(todo.getTags().stream().map(tag -> tag.getName()).collect(Collectors.toSet()));
+            response.setTags(todo.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
         }
         return response;
     }

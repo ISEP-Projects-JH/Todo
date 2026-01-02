@@ -1,9 +1,14 @@
 package com.todoapp.controller.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class CreateTodoRequest {
     private String title;
     private String description;
