@@ -63,7 +63,11 @@ public class Steps {
     @Then("task {string} should not exist")
     public void task_should_not_exist(String title) {
         boolean exists = false;
-        try { todoService.getByTitle(title); exists = true; } catch (IllegalArgumentException ignored) {}
+        try {
+            todoService.getByTitle(title);
+            exists = true;
+        } catch (IllegalArgumentException ignored) {
+        }
         Assert.assertFalse(exists);
     }
 

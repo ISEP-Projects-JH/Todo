@@ -15,7 +15,7 @@ Feature: Todo core behavior
 
   Scenario: Update a task
     Given the following tasks exist:
-      | title   | description | tags |
+      | title    | description | tags |
       | Buy milk | Go to store | home |
     When I update task "Buy milk" to title "Buy coffee" description "Starbucks" tags:
       | daily |
@@ -28,7 +28,7 @@ Feature: Todo core behavior
 
   Scenario: Mark as completed
     Given the following tasks exist:
-      | title   | description | tags |
+      | title    | description | tags |
       | Buy milk | Go to store | home |
     When I mark task "Buy milk" as completed
     Then task "Buy milk" has status "completed"
@@ -37,7 +37,7 @@ Feature: Todo core behavior
 
   Scenario: Mark as pending
     Given the following tasks exist:
-      | title   | description | tags |
+      | title    | description | tags |
       | Buy milk | Go to store | home |
     And I mark task "Buy milk" as completed
     When I mark task "Buy milk" as pending
@@ -47,7 +47,7 @@ Feature: Todo core behavior
 
   Scenario: Delete a task
     Given the following tasks exist:
-      | title   | description | tags |
+      | title    | description | tags |
       | Buy milk | Go to store | home |
     When I delete task "Buy milk"
     Then task "Buy milk" should not exist
@@ -57,7 +57,7 @@ Feature: Todo core behavior
   Scenario: Add and remove tags
     Given the following tasks exist:
       | title | description | tags  |
-      | Read  | Book       | study |
+      | Read  | Book        | study |
     When I add tags to task "Read":
       | hobby |
     And I remove tags from task "Read":
