@@ -90,3 +90,20 @@ Feature: Todo database behavior
       | F     | f           | y    | pending   |
     Then database service completed count is 1
     And database service pending count is 1
+
+  Scenario: Database fuzzy search by text
+    Given the following database tasks exist:
+      | title      | description     | tags |
+      | Buy milk   | Grocery store   | home |
+      | Coffee mug | Kitchen utensil | home |
+      | Run        | Morning jog     | fit  |
+    When I search database tasks with query "cof"
+    Then I should see 1 database search results
+
+  Scenario: Database time search before now
+    Given the following database tasks exist:
+      | title     | description | tags |
+      | Early A   | first       | a    |
+      | Early B   | second      | b    |
+    When I list database tasks before time "2026-12-31T23:59:59"
+    Then I should see 2 database tasks

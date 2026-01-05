@@ -33,6 +33,8 @@ public class StepsRESTful {
     private TodoService todoService;
 
     private TodoResponse lastReturnedTodoResponse;
+    private int lastRestfulListCount = 0;
+    private int lastRestfulSearchCount = 0;
 
     @Given("the restful task list is empty")
     public void the_restful_task_list_is_empty() {
@@ -144,14 +146,45 @@ public class StepsRESTful {
 
     @When("I list restful tasks")
     public void i_list_restful_tasks() throws Exception {
-        mockMvc.perform(get("/api/todos"))
-                .andExpect(status().isOk());
+        MvcResult result = mockMvc.perform(get("/api/todos"))
+                .andExpect(status().isOk())
+                .andReturn();
+        TodoResponse[] arr = objectMapper.readValue(result.getResponse().getContentAsString(), TodoResponse[].class);
+        lastRestfulListCount = arr.length;
+    }
+
+    @When("I search restful tasks with query {string}")
+    public void i_search_restful_tasks_with_query(String query) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/todos/search").param("q", query))
+                .andExpect(status().isOk())
+                .andReturn();
+        TodoResponse[] arr = objectMapper.readValue(result.getResponse().getContentAsString(), TodoResponse[].class);
+        lastRestfulSearchCount = arr.length;
+    }
+
+    @When("I list restful tasks before time {string}")
+    public void i_list_restful_tasks_before_time(String isoTime) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/todos/before").param("time", isoTime))
+                .andExpect(status().isOk())
+                .andReturn();
+        TodoResponse[] arr = objectMapper.readValue(result.getResponse().getContentAsString(), TodoResponse[].class);
+        lastRestfulListCount = arr.length;
     }
 
     @Then("restful task {string} exists")
     public void restful_task_exists(String title) throws Exception {
         mockMvc.perform(get("/api/todos/{title}", title))
                 .andExpect(status().isOk());
+    }
+
+    @Then("I should see {int} restful tasks")
+    public void i_should_see_restful_tasks(Integer count) {
+        Assert.assertEquals(count.intValue(), lastRestfulListCount);
+    }
+
+    @Then("I should see {int} restful search results")
+    public void i_should_see_restful_search_results(Integer count) {
+        Assert.assertEquals(count.intValue(), lastRestfulSearchCount);
     }
 
     @Then("restful task {string} should not exist")
@@ -223,14 +256,6 @@ public class StepsRESTful {
         Assert.assertEquals(count, response.getPendingCount());
     }
 
-    @Then("I should see {int} restful tasks")
-    public void i_should_see_restful_tasks(int count) throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/todos"))
-                .andExpect(status().isOk())
-                .andReturn();
-        TodoResponse[] responses = objectMapper.readValue(result.getResponse().getContentAsString(), TodoResponse[].class);
-        Assert.assertEquals(count, responses.length);
-    }
 
     @Then("the last returned restful todo can be found by id")
     public void the_last_returned_restful_todo_can_be_found_by_id() {

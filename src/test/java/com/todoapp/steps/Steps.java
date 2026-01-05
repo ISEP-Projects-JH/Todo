@@ -22,6 +22,7 @@ public class Steps {
     private final DashboardService dashboardService = new DashboardService(todoRepository);
     private int lastListCount = 0;
     private Todo lastReturnedTodo = null;
+    private int lastSearchCount = 0;
 
     @Given("the task list is empty")
     public void the_task_list_is_empty() {
@@ -137,9 +138,24 @@ public class Steps {
         lastListCount = todoService.listTodos().size();
     }
 
+    @When("I search tasks with query {string}")
+    public void i_search_tasks_with_query(String query) {
+        lastSearchCount = todoService.searchTodos(query).size();
+    }
+
+    @When("I list tasks before time {string}")
+    public void i_list_tasks_before_time(String isoTime) {
+        lastListCount = todoService.listTodosBefore(java.time.LocalDateTime.parse(isoTime)).size();
+    }
+
     @Then("I should see {int} tasks")
     public void i_should_see_tasks(Integer count) {
         Assert.assertEquals(count.intValue(), lastListCount);
+    }
+
+    @Then("I should see {int} search results")
+    public void i_should_see_search_results(Integer count) {
+        Assert.assertEquals(count.intValue(), lastSearchCount);
     }
 
     @Then("dashboard completed count is {int}")

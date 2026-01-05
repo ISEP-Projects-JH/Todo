@@ -90,3 +90,20 @@ Feature: Todo restful behavior
       | F     | f           | y    | pending   |
     Then restful service completed count is 1
     And restful service pending count is 1
+
+  Scenario: Restful fuzzy search by text
+    Given the following restful tasks exist:
+      | title      | description     | tags |
+      | Buy milk   | Grocery store   | home |
+      | Coffee mug | Kitchen utensil | home |
+      | Run        | Morning jog     | fit  |
+    When I search restful tasks with query "cof"
+    Then I should see 1 restful search results
+
+  Scenario: Restful time search before now
+    Given the following restful tasks exist:
+      | title     | description | tags |
+      | Early A   | first       | a    |
+      | Early B   | second      | b    |
+    When I list restful tasks before time "2026-12-31T23:59:59"
+    Then I should see 2 restful tasks

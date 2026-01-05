@@ -90,3 +90,20 @@ Feature: Todo core behavior
       | D     | d           | y    | pending   |
     Then service completed count is 1
     And service pending count is 1
+
+  Scenario: Fuzzy search by text
+    Given the following tasks exist:
+      | title      | description     | tags |
+      | Buy milk   | Grocery store   | home |
+      | Coffee mug | Kitchen utensil | home |
+      | Run        | Morning jog     | fit  |
+    When I search tasks with query "cof"
+    Then I should see 1 search results
+
+  Scenario: Time search before now
+    Given the following tasks exist:
+      | title     | description | tags |
+      | Early A   | first       | a    |
+      | Early B   | second      | b    |
+    When I list tasks before time "2026-12-31T23:59:59"
+    Then I should see 2 tasks

@@ -31,6 +31,7 @@ public class StepsDataBase {
 
     private int lastListCount = 0;
     private Todo lastReturnedTodo = null;
+    private int lastSearchCount = 0;
 
     @Given("the database task list is empty")
     public void the_database_task_list_is_empty() {
@@ -146,11 +147,25 @@ public class StepsDataBase {
         lastListCount = todoService.listTodos().size();
     }
 
+    @When("I search database tasks with query {string}")
+    public void i_search_database_tasks_with_query(String query) {
+        lastSearchCount = todoService.searchTodos(query).size();
+    }
+
+    @When("I list database tasks before time {string}")
+    public void i_list_database_tasks_before_time(String isoTime) {
+        lastListCount = todoService.listTodosBefore(java.time.LocalDateTime.parse(isoTime)).size();
+    }
+
     @Then("I should see {int} database tasks")
     public void i_should_see_database_tasks(Integer count) {
         Assert.assertEquals(count.intValue(), lastListCount);
     }
 
+    @Then("I should see {int} database search results")
+    public void i_should_see_database_search_results(Integer count) {
+        Assert.assertEquals(count.intValue(), lastSearchCount);
+    }
     @Then("database dashboard completed count is {int}")
     public void database_dashboard_completed_count(Integer count) {
         Assert.assertEquals(count.intValue(), dashboardService.completedCount());
