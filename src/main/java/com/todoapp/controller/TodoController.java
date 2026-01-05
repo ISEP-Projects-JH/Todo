@@ -98,15 +98,20 @@ public class TodoController {
     }
 
     @GetMapping("/todos/before")
-    public List<TodoResponse> listTodosBefore(@RequestParam("time") String isoTime,
-                                              @RequestParam(value = "limit", required = false, defaultValue = "64") int limit) {
-        LocalDateTime before;
+    public List<TodoResponse> listTodosBefore(@RequestParam("time") String timeStr, @RequestParam(value = "limit", defaultValue = "64") int limit) {
         try {
-            before = LocalDateTime.parse(isoTime);
+            LocalDateTime time = LocalDateTime.parse(timeStr);
+            return todoService.listTodosBefore(time, limit).stream()
+                    .map(TodoResponse::from)
+                    .collect(Collectors.toList());
         } catch (DateTimeParseException e) {
-            before = LocalDateTime.now();
+            throw new IllegalArgumentException("Invalid date format: " + timeStr);
         }
-        return todoService.listTodosBefore(before, limit).stream()
+    }
+
+    @GetMapping("/todos/search/tag")
+    public List<TodoResponse> findByTag(@RequestParam("tag") String tag) {
+        return todoService.findByTag(tag).stream()
                 .map(TodoResponse::from)
                 .collect(Collectors.toList());
     }

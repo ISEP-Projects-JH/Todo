@@ -71,6 +71,10 @@ public class TodoService {
         return todoRepository.findBefore(before, limit);
     }
 
+    public List<Todo> findByTag(String tag) {
+        return todoRepository.findByTag(tag);
+    }
+
     public Todo addTags(String title, Set<String> tagNames) {
         Todo todo = getByTitle(title);
         todo.getTags().addAll(resolveTags(tagNames));

@@ -13,6 +13,8 @@ import java.util.List;
 public interface TodoTagRelationDTORepository extends CrudRepository<TodoTagRelationDTO, Long> {
     List<TodoTagRelationDTO> findByTodoId(Long todoId);
 
+    List<TodoTagRelationDTO> findByTagId(Long tagId);
+
     @Modifying
     @Query("DELETE FROM todo_tags WHERE todo_id = :todoId")
     void deleteAllByTodoId(@Param("todoId") Long todoId);

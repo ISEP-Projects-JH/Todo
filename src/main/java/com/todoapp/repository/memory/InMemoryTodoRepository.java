@@ -63,4 +63,14 @@ public class InMemoryTodoRepository implements TodoRepository {
                 .sorted(Comparator.comparing(Todo::getCreatedAt))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Todo> findByTag(String tag) {
+        if (tag == null || tag.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return store.values().stream()
+                .filter(t -> t.getTags().stream().anyMatch(existingTag -> existingTag.getName().equals(tag)))
+                .collect(Collectors.toList());
+    }
 }

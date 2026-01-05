@@ -20,4 +20,6 @@ public interface TodoRepository {
     List<Todo> searchByText(String query);
 
     List<Todo> findBefore(LocalDateTime before, int limit);
+
+    List<Todo> findByTag(String tag);
 }

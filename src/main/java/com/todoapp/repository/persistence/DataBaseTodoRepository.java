@@ -90,6 +90,26 @@ public class DataBaseTodoRepository implements TodoRepository {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Todo> findByTag(String tag) {
+        Optional<TagDTO> tagDTO = tagRepo.findByName(tag);
+        if (tagDTO.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> todoIds = relationRepo.findByTagId(tagDTO.get().getId()).stream()
+                .map(TodoTagRelationDTO::getTodoId)
+                .collect(Collectors.toList());
+
+        if (todoIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return todoRepo.findAllById(todoIds).stream()
+                .map(this::mapTodo)
+                .collect(Collectors.toList());
+    }
+
     private Todo mapTodo(TodoDTO dto) {
         Todo t = new Todo();
         t.setId(dto.getId());

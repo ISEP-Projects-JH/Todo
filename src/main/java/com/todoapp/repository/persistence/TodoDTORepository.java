@@ -22,4 +22,7 @@ public interface TodoDTORepository extends CrudRepository<TodoDTO, Long> {
     List<TodoDTO> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String titlePart, String descPart);
 
     List<TodoDTO> findByCreatedAtBeforeOrderByCreatedAtDesc(LocalDateTime before, Pageable pageable);
+
+    @NonNull
+    List<TodoDTO> findAllById(@NonNull Iterable<Long> ids);
 }
