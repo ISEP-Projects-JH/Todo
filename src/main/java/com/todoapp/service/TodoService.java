@@ -59,6 +59,14 @@ public class TodoService {
         return todoRepository.findAll();
     }
 
+    public List<Todo> searchTodos(String query) {
+        return todoRepository.searchByText(query);
+    }
+
+    public List<Todo> listTodosBefore(LocalDateTime before) {
+        return todoRepository.findBefore(before);
+    }
+
     public Todo addTags(String title, Set<String> tagNames) {
         Todo todo = getByTitle(title);
         todo.getTags().addAll(resolveTags(tagNames));

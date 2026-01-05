@@ -9,6 +9,7 @@ import com.todoapp.repository.TodoRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 public class DataBaseTodoRepository implements TodoRepository {
     private final TodoDTORepository todoRepo;
@@ -67,6 +68,24 @@ public class DataBaseTodoRepository implements TodoRepository {
     public void deleteById(Long id) {
         relationRepo.deleteAllByTodoId(id);
         todoRepo.deleteById(id);
+    }
+
+    @Override
+    public List<Todo> searchByText(String query) {
+        String q = query == null ? "" : query;
+        return todoRepo.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(q, q)
+                .stream()
+                .map(this::mapTodo)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Todo> findBefore(LocalDateTime before) {
+        LocalDateTime b = before == null ? LocalDateTime.now() : before;
+        return todoRepo.findByCreatedAtBeforeOrderByCreatedAtAsc(b)
+                .stream()
+                .map(this::mapTodo)
+                .collect(Collectors.toList());
     }
 
     private Todo mapTodo(TodoDTO dto) {

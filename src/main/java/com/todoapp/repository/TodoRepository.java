@@ -4,6 +4,7 @@ import com.todoapp.domain.Todo;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 public interface TodoRepository {
     Todo save(Todo todo);
@@ -15,4 +16,8 @@ public interface TodoRepository {
     List<Todo> findAll();
 
     void deleteById(Long id);
+
+    List<Todo> searchByText(String query);
+
+    List<Todo> findBefore(LocalDateTime before);
 }
