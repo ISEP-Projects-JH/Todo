@@ -107,3 +107,12 @@ Feature: Todo core behavior
       | Early B   | second      | b    |
     When I list tasks before time "2026-12-31T23:59:59"
     Then I should see 2 tasks
+
+  Scenario: Time search with limit
+    Given the following tasks exist:
+      | title     | description | tags |
+      | Task 1    | d1          | t1   |
+      | Task 2    | d2          | t2   |
+      | Task 3    | d3          | t3   |
+    When I list tasks before time "2026-12-31T23:59:59" with limit 2
+    Then I should see 2 tasks

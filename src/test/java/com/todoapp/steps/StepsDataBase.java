@@ -157,6 +157,11 @@ public class StepsDataBase {
         lastListCount = todoService.listTodosBefore(java.time.LocalDateTime.parse(isoTime)).size();
     }
 
+    @When("I list database tasks before time {string} with limit {int}")
+    public void i_list_database_tasks_before_time_with_limit(String isoTime, int limit) {
+        lastListCount = todoService.listTodosBefore(java.time.LocalDateTime.parse(isoTime), limit).size();
+    }
+
     @Then("I should see {int} database tasks")
     public void i_should_see_database_tasks(Integer count) {
         Assert.assertEquals(count.intValue(), lastListCount);

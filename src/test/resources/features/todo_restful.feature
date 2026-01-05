@@ -107,3 +107,12 @@ Feature: Todo restful behavior
       | Early B   | second      | b    |
     When I list restful tasks before time "2026-12-31T23:59:59"
     Then I should see 2 restful tasks
+
+  Scenario: Restful time search with limit
+    Given the following restful tasks exist:
+      | title       | description | tags |
+      | REST Task 1 | d1          | t1   |
+      | REST Task 2 | d2          | t2   |
+      | REST Task 3 | d3          | t3   |
+    When I list restful tasks before time "2026-12-31T23:59:59" with limit 2
+    Then I should see 2 restful tasks

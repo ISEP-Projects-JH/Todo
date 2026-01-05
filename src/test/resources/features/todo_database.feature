@@ -107,3 +107,12 @@ Feature: Todo database behavior
       | Early B   | second      | b    |
     When I list database tasks before time "2026-12-31T23:59:59"
     Then I should see 2 database tasks
+
+  Scenario: Database time search with limit
+    Given the following database tasks exist:
+      | title     | description | tags |
+      | DB Task 1 | d1          | t1   |
+      | DB Task 2 | d2          | t2   |
+      | DB Task 3 | d3          | t3   |
+    When I list database tasks before time "2026-12-31T23:59:59" with limit 2
+    Then I should see 2 database tasks

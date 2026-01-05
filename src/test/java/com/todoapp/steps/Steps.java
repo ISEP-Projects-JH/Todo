@@ -148,6 +148,11 @@ public class Steps {
         lastListCount = todoService.listTodosBefore(java.time.LocalDateTime.parse(isoTime)).size();
     }
 
+    @When("I list tasks before time {string} with limit {int}")
+    public void i_list_tasks_before_time_with_limit(String isoTime, int limit) {
+        lastListCount = todoService.listTodosBefore(java.time.LocalDateTime.parse(isoTime), limit).size();
+    }
+
     @Then("I should see {int} tasks")
     public void i_should_see_tasks(Integer count) {
         Assert.assertEquals(count.intValue(), lastListCount);

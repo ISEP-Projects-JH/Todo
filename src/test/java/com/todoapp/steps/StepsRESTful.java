@@ -171,6 +171,17 @@ public class StepsRESTful {
         lastRestfulListCount = arr.length;
     }
 
+    @When("I list restful tasks before time {string} with limit {int}")
+    public void i_list_restful_tasks_before_time_with_limit(String isoTime, int limit) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/todos/before")
+                        .param("time", isoTime)
+                        .param("limit", String.valueOf(limit)))
+                .andExpect(status().isOk())
+                .andReturn();
+        TodoResponse[] arr = objectMapper.readValue(result.getResponse().getContentAsString(), TodoResponse[].class);
+        lastRestfulListCount = arr.length;
+    }
+
     @Then("restful task {string} exists")
     public void restful_task_exists(String title) throws Exception {
         mockMvc.perform(get("/api/todos/{title}", title))
