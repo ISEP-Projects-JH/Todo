@@ -64,7 +64,11 @@ public class TodoService {
     }
 
     public List<Todo> listTodosBefore(LocalDateTime before) {
-        return todoRepository.findBefore(before);
+        return listTodosBefore(before, 64);
+    }
+
+    public List<Todo> listTodosBefore(LocalDateTime before, int limit) {
+        return todoRepository.findBefore(before, limit);
     }
 
     public Todo addTags(String title, Set<String> tagNames) {

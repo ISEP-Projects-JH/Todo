@@ -54,10 +54,12 @@ public class InMemoryTodoRepository implements TodoRepository {
     }
 
     @Override
-    public List<Todo> findBefore(LocalDateTime before) {
+    public List<Todo> findBefore(LocalDateTime before, int limit) {
         LocalDateTime b = before == null ? LocalDateTime.now() : before;
         return store.values().stream()
                 .filter(t -> t.getCreatedAt() != null && t.getCreatedAt().isBefore(b))
+                .sorted(Comparator.comparing(Todo::getCreatedAt).reversed())
+                .limit(limit)
                 .sorted(Comparator.comparing(Todo::getCreatedAt))
                 .collect(Collectors.toList());
     }

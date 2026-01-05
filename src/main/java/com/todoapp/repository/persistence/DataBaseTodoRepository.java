@@ -6,6 +6,7 @@ import com.todoapp.entity.TodoDTO;
 import com.todoapp.entity.TagDTO;
 import com.todoapp.entity.TodoTagRelationDTO;
 import com.todoapp.repository.TodoRepository;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,11 +81,12 @@ public class DataBaseTodoRepository implements TodoRepository {
     }
 
     @Override
-    public List<Todo> findBefore(LocalDateTime before) {
+    public List<Todo> findBefore(LocalDateTime before, int limit) {
         LocalDateTime b = before == null ? LocalDateTime.now() : before;
-        return todoRepo.findByCreatedAtBeforeOrderByCreatedAtAsc(b)
+        return todoRepo.findByCreatedAtBeforeOrderByCreatedAtDesc(b, PageRequest.of(0, limit))
                 .stream()
                 .map(this::mapTodo)
+                .sorted(Comparator.comparing(Todo::getCreatedAt))
                 .collect(Collectors.toList());
     }
 

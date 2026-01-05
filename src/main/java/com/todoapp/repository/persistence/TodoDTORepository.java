@@ -2,6 +2,7 @@ package com.todoapp.repository.persistence;
 
 import com.todoapp.entity.TodoDTO;
 import lombok.NonNull;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,5 +21,5 @@ public interface TodoDTORepository extends CrudRepository<TodoDTO, Long> {
 
     List<TodoDTO> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String titlePart, String descPart);
 
-    List<TodoDTO> findByCreatedAtBeforeOrderByCreatedAtAsc(LocalDateTime before);
+    List<TodoDTO> findByCreatedAtBeforeOrderByCreatedAtDesc(LocalDateTime before, Pageable pageable);
 }

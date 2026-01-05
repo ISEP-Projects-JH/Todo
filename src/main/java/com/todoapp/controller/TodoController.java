@@ -98,14 +98,15 @@ public class TodoController {
     }
 
     @GetMapping("/todos/before")
-    public List<TodoResponse> listTodosBefore(@RequestParam("time") String isoTime) {
+    public List<TodoResponse> listTodosBefore(@RequestParam("time") String isoTime,
+                                              @RequestParam(value = "limit", required = false, defaultValue = "64") int limit) {
         LocalDateTime before;
         try {
             before = LocalDateTime.parse(isoTime);
         } catch (DateTimeParseException e) {
             before = LocalDateTime.now();
         }
-        return todoService.listTodosBefore(before).stream()
+        return todoService.listTodosBefore(before, limit).stream()
                 .map(TodoResponse::from)
                 .collect(Collectors.toList());
     }
