@@ -152,6 +152,11 @@ public class StepsDataBase {
         lastSearchCount = todoService.searchTodos(query).size();
     }
 
+    @When("I search database tasks with tag {string}")
+    public void i_search_database_tasks_with_tag(String tag) {
+        lastSearchCount = todoService.findByTag(tag).size();
+    }
+
     @When("I list database tasks before time {string}")
     public void i_list_database_tasks_before_time(String isoTime) {
         lastListCount = todoService.listTodosBefore(java.time.LocalDateTime.parse(isoTime)).size();

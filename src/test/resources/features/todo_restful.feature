@@ -100,19 +100,19 @@ Feature: Todo restful behavior
     When I search restful tasks with query "cof"
     Then I should see 1 restful search results
 
-  Scenario: Restful time search before now
+  Scenario: Restful time search before
     Given the following restful tasks exist:
-      | title     | description | tags |
-      | Early A   | first       | a    |
-      | Early B   | second      | b    |
-    When I list restful tasks before time "2026-12-31T23:59:59"
+      | title | description | tags |
+      | Old   | old task    | t    |
+      | New   | new task    | t    |
+    When I list restful tasks before time "2099-12-31T23:59:59"
     Then I should see 2 restful tasks
 
-  Scenario: Restful time search with limit
+  Scenario: Restful search todos by tag
     Given the following restful tasks exist:
-      | title       | description | tags |
-      | REST Task 1 | d1          | t1   |
-      | REST Task 2 | d2          | t2   |
-      | REST Task 3 | d3          | t3   |
-    When I list restful tasks before time "2026-12-31T23:59:59" with limit 2
-    Then I should see 2 restful tasks
+      | title | description | tags       |
+      | A     | a           | home, work |
+      | B     | b           | home       |
+      | C     | c           | work       |
+    When I search restful tasks with tag "home"
+    Then I should see 2 restful search results

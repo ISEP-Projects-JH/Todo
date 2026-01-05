@@ -162,6 +162,15 @@ public class StepsRESTful {
         lastRestfulSearchCount = arr.length;
     }
 
+    @When("I search restful tasks with tag {string}")
+    public void i_search_restful_tasks_with_tag(String tag) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/todos/search/tag").param("tag", tag))
+                .andExpect(status().isOk())
+                .andReturn();
+        TodoResponse[] arr = objectMapper.readValue(result.getResponse().getContentAsString(), TodoResponse[].class);
+        lastRestfulSearchCount = arr.length;
+    }
+
     @When("I list restful tasks before time {string}")
     public void i_list_restful_tasks_before_time(String isoTime) throws Exception {
         MvcResult result = mockMvc.perform(get("/api/todos/before").param("time", isoTime))

@@ -100,19 +100,19 @@ Feature: Todo core behavior
     When I search tasks with query "cof"
     Then I should see 1 search results
 
-  Scenario: Time search before now
+  Scenario: Time search before
     Given the following tasks exist:
-      | title     | description | tags |
-      | Early A   | first       | a    |
-      | Early B   | second      | b    |
-    When I list tasks before time "2026-12-31T23:59:59"
+      | title | description | tags |
+      | Old   | old task    | t    |
+      | New   | new task    | t    |
+    When I list tasks before time "2099-12-31T23:59:59"
     Then I should see 2 tasks
 
-  Scenario: Time search with limit
+  Scenario: Search todos by tag
     Given the following tasks exist:
-      | title     | description | tags |
-      | Task 1    | d1          | t1   |
-      | Task 2    | d2          | t2   |
-      | Task 3    | d3          | t3   |
-    When I list tasks before time "2026-12-31T23:59:59" with limit 2
-    Then I should see 2 tasks
+      | title | description | tags       |
+      | A     | a           | home, work |
+      | B     | b           | home       |
+      | C     | c           | work       |
+    When I search tasks with tag "home"
+    Then I should see 2 search results

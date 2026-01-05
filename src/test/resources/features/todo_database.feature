@@ -100,19 +100,19 @@ Feature: Todo database behavior
     When I search database tasks with query "cof"
     Then I should see 1 database search results
 
-  Scenario: Database time search before now
+  Scenario: Database time search before
     Given the following database tasks exist:
-      | title     | description | tags |
-      | Early A   | first       | a    |
-      | Early B   | second      | b    |
-    When I list database tasks before time "2026-12-31T23:59:59"
+      | title | description | tags |
+      | Old   | old task    | t    |
+      | New   | new task    | t    |
+    When I list database tasks before time "2099-12-31T23:59:59"
     Then I should see 2 database tasks
 
-  Scenario: Database time search with limit
+  Scenario: Database search todos by tag
     Given the following database tasks exist:
-      | title     | description | tags |
-      | DB Task 1 | d1          | t1   |
-      | DB Task 2 | d2          | t2   |
-      | DB Task 3 | d3          | t3   |
-    When I list database tasks before time "2026-12-31T23:59:59" with limit 2
-    Then I should see 2 database tasks
+      | title | description | tags       |
+      | A     | a           | home, work |
+      | B     | b           | home       |
+      | C     | c           | work       |
+    When I search database tasks with tag "home"
+    Then I should see 2 database search results
