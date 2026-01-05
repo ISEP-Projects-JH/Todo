@@ -1,0 +1,95 @@
+name: Run Jenkins Pipeline
+
+on:
+  push:
+    paths:
+      - '.github/workflows/run_jenkins.yml'
+      - 'Jenkinsfile'
+  workflow_dispatch:
+
+jobs:
+  run-jenkins:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release
+
+          curl -fsSL https://get.docker.com | sudo sh
+          sudo usermod -aG docker $USER
+
+      - name: Verify Docker
+        run: docker --version
+
+      - name: Start Jenkins container
+        run: |
+          docker run -d \
+            --name jenkins \
+            -p 8080:8080 \
+            -p 50000:50000 \
+            -v jenkins_home:/var/jenkins_home \
+            jenkins/jenkins:lts
+
+      - name: Wait for Jenkins
+        run: |
+          echo "Waiting for Jenkins..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/login > /dev/null; then
+              echo "Jenkins is up"
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Get Jenkins admin token
+        run: |
+          PASS=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)
+          echo "JENKINS_USER=admin" >> $GITHUB_ENV
+          echo "JENKINS_TOKEN=$PASS" >> $GITHUB_ENV
+          echo "JENKINS_URL=http://localhost:8080" >> $GITHUB_ENV
+
+      - name: Create Jenkins Pipeline Job
+        run: |
+          cat > job.xml <<'EOF'
+          <flow-definition plugin="workflow-job">
+            <description>GitHub Actions Triggered Pipeline</description>
+            <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps">
+              <scm class="hudson.plugins.git.GitSCM" plugin="git">
+                <configVersion>2</configVersion>
+                <userRemoteConfigs>
+                  <hudson.plugins.git.UserRemoteConfig>
+                    <url>${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git</url>
+                  </hudson.plugins.git.UserRemoteConfig>
+                </userRemoteConfigs>
+                <branches>
+                  <hudson.plugins.git.BranchSpec>
+                    <name>*/main</name>
+                  </hudson.plugins.git.BranchSpec>
+                </branches>
+              </scm>
+              <scriptPath>Jenkinsfile</scriptPath>
+            </definition>
+            <triggers/>
+            <disabled>false</disabled>
+          </flow-definition>
+          EOF
+
+          curl -X POST "$JENKINS_URL/createItem?name=TodoApp" \
+            -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            -H "Content-Type: application/xml" \
+            --data-binary @job.xml || true
+
+      - name: Trigger Jenkins Job
+        run: |
+          curl -X POST \
+            -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            "$JENKINS_URL/job/TodoApp/build"
