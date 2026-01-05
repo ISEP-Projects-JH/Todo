@@ -1,0 +1,22 @@
+<flow-definition plugin="workflow-job">
+    <description>TodoApp CI</description>
+
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition">
+        <scm class="hudson.plugins.git.GitSCM">
+            <configVersion>2</configVersion>
+            <userRemoteConfigs>
+                <hudson.plugins.git.UserRemoteConfig>
+                    <url>file:///workspace</url>
+                </hudson.plugins.git.UserRemoteConfig>
+            </userRemoteConfigs>
+            <branches>
+                <hudson.plugins.git.BranchSpec>
+                    <name>*/HEAD</name>
+                </hudson.plugins.git.BranchSpec>
+            </branches>
+        </scm>
+        <scriptPath>Jenkinsfile</scriptPath>
+    </definition>
+
+    <disabled>false</disabled>
+</flow-definition>
