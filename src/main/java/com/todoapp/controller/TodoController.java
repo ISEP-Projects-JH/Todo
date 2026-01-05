@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 
 @RestController
 @RequestMapping("/api")
@@ -86,5 +88,25 @@ public class TodoController {
         response.setCompletedCount(dashboardService.completedCount());
         response.setPendingCount(dashboardService.pendingCount());
         return response;
+    }
+
+    @GetMapping("/todos/search")
+    public List<TodoResponse> searchTodos(@RequestParam("q") String query) {
+        return todoService.searchTodos(query).stream()
+                .map(TodoResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/todos/before")
+    public List<TodoResponse> listTodosBefore(@RequestParam("time") String isoTime) {
+        LocalDateTime before;
+        try {
+            before = LocalDateTime.parse(isoTime);
+        } catch (DateTimeParseException e) {
+            before = LocalDateTime.now();
+        }
+        return todoService.listTodosBefore(before).stream()
+                .map(TodoResponse::from)
+                .collect(Collectors.toList());
     }
 }
