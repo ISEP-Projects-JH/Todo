@@ -4,18 +4,22 @@
     <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition">
         <scm class="hudson.plugins.git.GitSCM">
             <configVersion>2</configVersion>
+
             <userRemoteConfigs>
                 <hudson.plugins.git.UserRemoteConfig>
-                    <url>file:///workspace</url>
+                    <url>__GIT_URL__</url>
                 </hudson.plugins.git.UserRemoteConfig>
             </userRemoteConfigs>
+
             <branches>
                 <hudson.plugins.git.BranchSpec>
-                    <name>*/HEAD</name>
+                    <name>*/__GIT_BRANCH__</name>
                 </hudson.plugins.git.BranchSpec>
             </branches>
         </scm>
+        
         <scriptPath>Jenkinsfile</scriptPath>
+        <lightweight>false</lightweight>
     </definition>
 
     <disabled>false</disabled>

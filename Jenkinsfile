@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   stages {
-
+  
     stage('Check Workspace') {
       steps {
         sh '''
@@ -20,6 +20,8 @@ pipeline {
           mvn -version
           node -v
           npm -v
+          python3 --version
+          google-chrome --version
         '''
       }
     }
@@ -27,7 +29,6 @@ pipeline {
     stage('Start Backend') {
       steps {
         sh '''
-          cd backend
           nohup mvn spring-boot:run > backend.log 2>&1 &
           echo $! > backend.pid
         '''
@@ -62,14 +63,43 @@ pipeline {
         '''
       }
     }
+
+    stage('Run Auto Test') {
+      steps {
+        sh '''
+          python3 -m scripts.auto_test | tee run.log
+
+          echo "=== auto_test output ==="
+          cat run.log
+
+          cp output.md /base/output.md
+
+          if grep -q "^success$" run.log; then
+            echo "Auto test success"
+          else
+            echo "Auto test failed"
+            exit 1
+          fi
+        '''
+      }
+    }
   }
 
   post {
     always {
       sh '''
         echo "Stopping services..."
-        kill $(cat backend/backend.pid) || true
-        kill $(cat frontend/frontend.pid) || true
+
+        if [ -f backend/backend.pid ]; then
+          kill $(cat backend/backend.pid) || true
+        fi
+
+        if [ -f frontend/frontend.pid ]; then
+          kill $(cat frontend/frontend.pid) || true
+        fi
+
+        echo "=== Jenkins finished ==="
+        ls -la /base/output.md || true
       '''
     }
   }

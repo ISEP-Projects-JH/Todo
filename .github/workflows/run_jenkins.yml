@@ -7,6 +7,7 @@ on:
       - 'Jenkinsfile'
       - 'job.xml'
       - 'Dockerfile'
+      - 'scripts/**'
   workflow_dispatch:
 
 jobs:
@@ -17,9 +18,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Docker
+      - name: Ensure Docker is available
         run: |
-          curl -fsSL https://get.docker.com | sudo sh
+          if command -v docker >/dev/null 2>&1; then
+            echo "Docker already installed"
+            docker --version
+          else
+            echo "Docker not found, installing..."
+            curl -fsSL https://get.docker.com | sudo sh
+          fi
 
       - name: Build Jenkins Image
         run: |
@@ -30,9 +37,9 @@ jobs:
           docker run -d \
             --name jenkins \
             -p 8080:8080 \
+            -e JAVA_OPTS="-Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true" \
             -v jenkins_home:/var/jenkins_home \
-            -v $GITHUB_WORKSPACE:/workspace \
-            -w /workspace \
+            -v jenkins_out:/base \
             jenkins-ci
 
       - name: Wait for Jenkins
@@ -49,15 +56,148 @@ jobs:
           echo "JENKINS_TOKEN=$PASS" >> $GITHUB_ENV
           echo "JENKINS_URL=http://localhost:8080" >> $GITHUB_ENV
 
+      - name: Get Jenkins Crumb
+        run: |
+          curl -s \
+            -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            -c /tmp/jenkins.cookies \
+            "$JENKINS_URL/crumbIssuer/api/json" \
+            > /tmp/crumb.json
+
+          CRUMB_FIELD=$(jq -r '.crumbRequestField' /tmp/crumb.json)
+          CRUMB_VALUE=$(jq -r '.crumb' /tmp/crumb.json)
+
+          if [ -z "$CRUMB_FIELD" ] || [ -z "$CRUMB_VALUE" ] || \
+             [ "$CRUMB_FIELD" = "null" ] || [ "$CRUMB_VALUE" = "null" ]; then
+            echo "Failed to obtain Jenkins crumb"
+            cat /tmp/crumb.json
+            exit 1
+          fi
+
+          echo "CRUMB_FIELD=$CRUMB_FIELD" >> $GITHUB_ENV
+          echo "CRUMB_VALUE=$CRUMB_VALUE" >> $GITHUB_ENV
+
+      - name: Render job.xml
+        run: |
+          GIT_URL="https://github.com/${GITHUB_REPOSITORY}.git"
+          GIT_BRANCH="${GITHUB_REF_NAME}"
+
+          sed \
+            -e "s|__GIT_URL__|$GIT_URL|g" \
+            -e "s|__GIT_BRANCH__|$GIT_BRANCH|g" \
+            job.xml > job.rendered.xml
+
+          echo "Rendered job.xml:"
+          grep -E "<url>|<name>" job.rendered.xml
+
       - name: Create Jenkins Job
         run: |
-          curl -X POST "$JENKINS_URL/createItem?name=TodoApp" \
+          STATUS=$(curl -s -o /tmp/create_job_resp.txt -w "%{http_code}" \
             -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            -b /tmp/jenkins.cookies \
+            -H "$CRUMB_FIELD: $CRUMB_VALUE" \
             -H "Content-Type: application/xml" \
-            --data-binary @job.xml || true
+            --data-binary @job.rendered.xml \
+            "$JENKINS_URL/createItem?name=TodoApp")
+
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "302" ]; then
+            echo "Jenkins job created successfully"
+          elif [ "$STATUS" = "400" ]; then
+            echo "Jenkins job already exists, continuing"
+          else
+            echo "Failed to create Jenkins job (HTTP $STATUS)"
+            cat /tmp/create_job_resp.txt
+            exit 1
+          fi
 
       - name: Trigger Jenkins Job
         run: |
           curl -X POST \
             -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            -b /tmp/jenkins.cookies \
+            -H "$CRUMB_FIELD: $CRUMB_VALUE" \
             "$JENKINS_URL/job/TodoApp/build"
+
+      - name: Wait for Jenkins Job Result
+        run: |
+          while true; do
+            RESULT=$(curl -s \
+              -u "$JENKINS_USER:$JENKINS_TOKEN" \
+              "$JENKINS_URL/job/TodoApp/lastBuild/api/json" \
+              | jq -r '.result' 2>/dev/null || true)
+
+            case "$RESULT" in
+              SUCCESS|FAILURE|ABORTED|UNSTABLE)
+                echo "JENKINS_RESULT=$RESULT" >> $GITHUB_ENV
+                echo "Jenkins finished with: $RESULT"
+                break
+                ;;
+              null|"")
+                echo "Jenkins still running..."
+                ;;
+              *)
+                echo "Unexpected Jenkins result: $RESULT"
+                ;;
+            esac
+
+            sleep 5
+          done
+
+      - name: Copy output.md from Jenkins container
+        if: always()
+        run: |
+          docker cp jenkins:/base/output.md ./output.md || true
+
+      - name: Read Jenkins output.md
+        if: always()
+        run: |
+          if [ ! -f output.md ]; then
+            echo "# Jenkins Output" > output.md
+            echo "" >> output.md
+            echo "_output.md not found_" >> output.md
+          fi
+
+          echo "JENKINS_OUTPUT<<EOF" >> $GITHUB_ENV
+          cat output.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Write CI Summary
+        if: always()
+        run: |
+          echo "# Jenkins Result" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** $JENKINS_RESULT" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Jenkins Output" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "$JENKINS_OUTPUT" >> $GITHUB_STEP_SUMMARY
+
+      - name: Dump Jenkins Console Log
+        if: always()
+        run: |
+          echo "====== Jenkins Console Output ======"
+
+          BUILD_NUMBER=$(curl -s \
+            -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            "$JENKINS_URL/job/TodoApp/lastBuild/api/json" \
+            | jq -r '.number')
+
+          if [ -z "$BUILD_NUMBER" ] || [ "$BUILD_NUMBER" = "null" ]; then
+            echo "Failed to determine Jenkins build number"
+            exit 0
+          fi
+
+          curl -s \
+            -u "$JENKINS_USER:$JENKINS_TOKEN" \
+            "$JENKINS_URL/job/TodoApp/$BUILD_NUMBER/consoleText" \
+            || true
+
+          echo "====== End Jenkins Console Output ======"
+
+      - name: Fail CI if Jenkins failed
+        if: always()
+        run: |
+          if [ "$JENKINS_RESULT" != "SUCCESS" ]; then
+            echo "Failing CI because Jenkins result = $JENKINS_RESULT"
+            exit 1
+          fi
