@@ -20,7 +20,6 @@ export interface DashboardData {
 }
 
 export const todoApi = {
-  ping: () => api.get('/ping'),
   
   getDashboard: () => api.get<DashboardData>('/dashboard'),
   
@@ -37,12 +36,6 @@ export const todoApi = {
   markCompleted: (title: string) => api.put<Todo>(`/todos/${title}/completed`),
   
   markPending: (title: string) => api.put<Todo>(`/todos/${title}/pending`),
-  
-  addTags: (title: string, tags: string[]) => 
-    api.post<Todo>(`/todos/${title}/tags`, { tags }),
-    
-  removeTags: (title: string, tags: string[]) => 
-    api.delete<Todo>(`/todos/${title}/tags`, { data: { tags } }),
 
   searchTodos: (query: string) => api.get<Todo[]>('/todos/search', { params: { q: query } }),
 
