@@ -46,6 +46,8 @@ export const todoApi = {
 
   searchTodos: (query: string) => api.get<Todo[]>('/todos/search', { params: { q: query } }),
 
+  findByTag: (tag: string) => api.get<Todo[]>('/todos/search/tag', { params: { tag } }),
+
   listTodosBefore: (time: string, limit: number = 64) => 
     api.get<Todo[]>('/todos/before', { params: { time, limit } })
 }

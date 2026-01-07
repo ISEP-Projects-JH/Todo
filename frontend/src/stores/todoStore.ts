@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { todoApi, type Todo, type DashboardData } from '../api/todoApi'
 
 export const useTodoStore = defineStore('todo', () => {
@@ -46,6 +46,23 @@ export const useTodoStore = defineStore('todo', () => {
       })
     } catch (e) {
       error.value = 'Failed to search todos'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function findByTag(tag: string) {
+    loading.value = true
+    try {
+      const response = await todoApi.findByTag(tag)
+      // Sort by createdAt DESC (newest first)
+      todos.value = response.data.sort((a, b) => {
+        const t1 = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const t2 = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return t2 - t1
+      })
+    } catch (e) {
+      error.value = 'Failed to find todos by tag'
     } finally {
       loading.value = false
     }
@@ -112,9 +129,10 @@ export const useTodoStore = defineStore('todo', () => {
 
   // State to track current view parameters
   const currentFilter = ref<{
-    type: 'all' | 'search' | 'date',
+    type: 'all' | 'search' | 'date' | 'tag',
     query?: string,
-    date?: string
+    date?: string,
+    tag?: string
   }>({ type: 'all' })
 
   async function refreshCurrentView() {
@@ -122,6 +140,8 @@ export const useTodoStore = defineStore('todo', () => {
       await searchTodos(currentFilter.value.query)
     } else if (currentFilter.value.type === 'date' && currentFilter.value.date) {
       await listTodosBefore(currentFilter.value.date)
+    } else if (currentFilter.value.type === 'tag' && currentFilter.value.tag) {
+      await findByTag(currentFilter.value.tag)
     } else {
       await fetchTodos()
     }
@@ -135,6 +155,7 @@ export const useTodoStore = defineStore('todo', () => {
     fetchDashboard,
     fetchTodos,
     searchTodos,
+    findByTag,
     listTodosBefore,
     createTodo,
     updateTodo,

@@ -12,6 +12,7 @@ const newTags = ref('')
 
 const searchQuery = ref('')
 const searchDate = ref('')
+const searchTag = ref('')
 
 onMounted(() => {
   store.currentFilter = { type: 'all' }
@@ -21,6 +22,7 @@ onMounted(() => {
 async function handleTextSearch() {
   if (!searchQuery.value.trim()) return
   searchDate.value = '' // Clear other filter
+  searchTag.value = ''
   store.currentFilter = { type: 'search', query: searchQuery.value }
   await store.searchTodos(searchQuery.value)
 }
@@ -28,16 +30,26 @@ async function handleTextSearch() {
 async function handleDateSearch() {
   if (!searchDate.value) return
   searchQuery.value = '' // Clear other filter
+  searchTag.value = ''
   const date = new Date(searchDate.value)
   date.setHours(23, 59, 59, 999)
-  const dateStr = date.toISOString()
+  const dateStr = date.toISOString().slice(0, -1)
   store.currentFilter = { type: 'date', date: dateStr }
   await store.listTodosBefore(dateStr)
+}
+
+async function handleTagSearch() {
+  if (!searchTag.value.trim()) return
+  searchQuery.value = ''
+  searchDate.value = ''
+  store.currentFilter = { type: 'tag', tag: searchTag.value }
+  await store.findByTag(searchTag.value)
 }
 
 async function handleReset() {
   searchQuery.value = ''
   searchDate.value = ''
+  searchTag.value = ''
   store.currentFilter = { type: 'all' }
   await store.fetchTodos()
 }
@@ -92,6 +104,10 @@ async function handleCreate() {
     <h1>Todos</h1>
     
     <div class="search-section">
+      <div class="info-note">
+        Note: All searches are mutually exclusive (OR relationship). Mixed search is not supported.
+      </div>
+
       <div class="search-group">
         <label>Search by Text:</label>
         <input 
@@ -100,7 +116,7 @@ async function handleCreate() {
           placeholder="Type and press Enter..." 
           class="input-field"
           @keyup.enter="handleTextSearch"
-          @focus="searchDate = ''"
+          @focus="searchDate = ''; searchTag = ''"
         >
       </div>
 
@@ -113,7 +129,21 @@ async function handleCreate() {
           type="date" 
           class="date-input"
           @change="handleDateSearch"
-          @focus="searchQuery = ''"
+          @focus="searchQuery = ''; searchTag = ''"
+        >
+      </div>
+
+      <div class="divider">- OR -</div>
+
+      <div class="search-group">
+        <label>Search by Tag:</label>
+        <input 
+          v-model="searchTag" 
+          type="text" 
+          placeholder="Enter one tag..." 
+          class="input-field"
+          @keyup.enter="handleTagSearch"
+          @focus="searchQuery = ''; searchDate = ''"
         >
       </div>
       
