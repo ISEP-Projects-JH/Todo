@@ -56,4 +56,9 @@ public class DataBaseTagRepository implements TagRepository {
             return t;
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public void deleteAll() {
+        tagDTORepository.deleteAll();
+    }
 }

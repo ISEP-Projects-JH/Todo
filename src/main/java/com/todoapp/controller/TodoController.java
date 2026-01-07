@@ -4,6 +4,7 @@ import com.todoapp.controller.dto.*;
 import com.todoapp.domain.Todo;
 import com.todoapp.service.DashboardService;
 import com.todoapp.service.TodoService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,6 +63,13 @@ public class TodoController {
         todoService.deleteByTitle(title);
     }
 
+    @DeleteMapping("/todos")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Profile("test")
+    public void clearAll() {
+        todoService.clearAll();
+    }
+
     @PutMapping("/todos/{title}/completed")
     public TodoResponse markCompleted(@PathVariable String title) {
         return TodoResponse.from(todoService.markCompletedByTitle(title));
@@ -73,11 +81,13 @@ public class TodoController {
     }
 
     @PostMapping("/todos/{title}/tags")
+    @Profile("test")
     public TodoResponse addTags(@PathVariable String title, @RequestBody TagOperationRequest request) {
         return TodoResponse.from(todoService.addTags(title, request.getTags()));
     }
 
     @DeleteMapping("/todos/{title}/tags")
+    @Profile("test")
     public TodoResponse removeTags(@PathVariable String title, @RequestBody TagOperationRequest request) {
         return TodoResponse.from(todoService.removeTags(title, request.getTags()));
     }

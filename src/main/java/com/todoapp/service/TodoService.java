@@ -21,6 +21,9 @@ public class TodoService {
     }
 
     public Todo createTodo(String title, String description, Set<String> tagNames) {
+        if (todoRepository.findByTitle(title).isPresent()) {
+            throw new IllegalArgumentException("Todo with title already exists: " + title);
+        }
         Todo todo = new Todo();
         todo.setTitle(title);
         todo.setDescription(description);
@@ -31,6 +34,11 @@ public class TodoService {
 
     public Todo updateTodoByTitle(String oldTitle, String newTitle, String description, Set<String> tagNames) {
         Todo todo = getByTitle(oldTitle);
+        if (newTitle != null && !newTitle.equals(oldTitle)) {
+            if (todoRepository.findByTitle(newTitle).isPresent()) {
+                throw new IllegalArgumentException("Todo with title already exists: " + newTitle);
+            }
+        }
         todo.setTitle(newTitle);
         todo.setDescription(description);
         todo.setTags(resolveTags(tagNames));
@@ -41,6 +49,11 @@ public class TodoService {
     public void deleteByTitle(String title) {
         Todo todo = getByTitle(title);
         todoRepository.deleteById(todo.getId());
+    }
+
+    public void clearAll() {
+        todoRepository.deleteAll();
+        tagRepository.deleteAll();
     }
 
     public Todo markCompletedByTitle(String title) {

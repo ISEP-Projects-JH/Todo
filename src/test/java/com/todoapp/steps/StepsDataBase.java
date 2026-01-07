@@ -35,9 +35,7 @@ public class StepsDataBase {
 
     @Given("the database task list is empty")
     public void the_database_task_list_is_empty() {
-        for (Todo t : new ArrayList<>(todoService.listTodos())) {
-            todoService.deleteByTitle(t.getTitle());
-        }
+        todoService.clearAll();
         lastListCount = 0;
     }
 

@@ -22,4 +22,6 @@ public interface TodoRepository {
     List<Todo> findBefore(LocalDateTime before, int limit);
 
     List<Todo> findByTag(String tag);
+
+    void deleteAll();
 }

@@ -26,9 +26,7 @@ public class Steps {
 
     @Given("the task list is empty")
     public void the_task_list_is_empty() {
-        for (Todo t : new ArrayList<>(todoRepository.findAll())) {
-            todoRepository.deleteById(t.getId());
-        }
+        todoService.clearAll();
         lastListCount = 0;
     }
 

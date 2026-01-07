@@ -33,4 +33,9 @@ public class InMemoryTagRepository implements TagRepository {
     public List<Tag> findAll() {
         return new ArrayList<>(store.values());
     }
+
+    @Override
+    public void deleteAll() {
+        store.clear();
+    }
 }

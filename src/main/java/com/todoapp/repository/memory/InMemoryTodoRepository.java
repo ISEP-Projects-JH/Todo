@@ -73,4 +73,9 @@ public class InMemoryTodoRepository implements TodoRepository {
                 .filter(t -> t.getTags().stream().anyMatch(existingTag -> existingTag.getName().equals(tag)))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void deleteAll() {
+        store.clear();
+    }
 }

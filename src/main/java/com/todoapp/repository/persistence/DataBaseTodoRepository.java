@@ -156,4 +156,10 @@ public class DataBaseTodoRepository implements TodoRepository {
             relationRepo.save(relation);
         }
     }
+
+    @Override
+    public void deleteAll() {
+        relationRepo.deleteAll();
+        todoRepo.deleteAll();
+    }
 }

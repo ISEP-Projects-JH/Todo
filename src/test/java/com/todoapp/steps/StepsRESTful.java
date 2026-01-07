@@ -39,9 +39,7 @@ public class StepsRESTful {
     @Given("the restful task list is empty")
     public void the_restful_task_list_is_empty() {
         // Clean up via service for reliability
-        for (Todo t : new ArrayList<>(todoService.listTodos())) {
-            todoService.deleteByTitle(t.getTitle());
-        }
+        todoService.clearAll();
     }
 
     @Given("the following restful tasks exist:")

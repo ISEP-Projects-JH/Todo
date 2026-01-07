@@ -13,4 +13,6 @@ public interface TagRepository {
     Optional<Tag> findByName(String name);
 
     List<Tag> findAll();
+
+    void deleteAll();
 }
