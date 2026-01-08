@@ -64,6 +64,31 @@ pipeline {
       }
     }
 
+    stage('Init submodules') {
+      steps {
+        sh '''
+          git submodule update --init --recursive
+        '''
+      }
+    }
+
+    stage('Install vendored jh_utils') {
+      steps {
+        sh '''
+          echo "Installing vendored jh_utils..."
+
+          cd vendor/jh_utils
+
+          python3 --version
+          pip3 --version
+
+          pip3 install -e .
+
+          echo "jh_utils installed (editable)"
+        '''
+      }
+    }
+
     stage('Run Auto Test') {
       steps {
         sh '''

@@ -46,6 +46,8 @@ RUN /opt/venv/bin/pip install --no-cache-dir \
     selenium \
     webdriver-manager
 
+RUN chown -R jenkins:jenkins /opt/venv
+
 ENV PATH="/opt/venv/bin:$PATH"
 
 RUN jenkins-plugin-cli --plugins \

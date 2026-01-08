@@ -4,6 +4,9 @@ scripts/**              linguist-vendored
 Dockerfile              linguist-vendored
 Jenkinsfile              linguist-vendored
 
+# Vendored dependencies
+vendor/**               linguist-vendored
+
 # Config artifacts
 *.xml                   linguist-vendored
 

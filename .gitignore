@@ -6,6 +6,26 @@ target/
 !mvnw
 !mvnw.cmd
 
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Packaging / build output
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# PEP 517 / setuptools
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
 # IDE settings
 
 # JetBrains / IntelliJ IDEA
@@ -19,6 +39,7 @@ target/
 *.log
 logs/
 log/
+output.md
 
 # Java build artifacts
 
