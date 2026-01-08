@@ -1,0 +1,11 @@
+# CI / Jenkins / scripts are not part of product source
+scripts/**              linguist-vendored
+
+Dockerfile              linguist-vendored
+Jenkinsfile              linguist-vendored
+
+# Config artifacts
+*.xml                   linguist-vendored
+
+# Diagrams / docs
+*.puml                  linguist-vendored
