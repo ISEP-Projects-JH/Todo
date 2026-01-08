@@ -148,19 +148,6 @@ jobs:
         run: |
           docker cp jenkins:/base/output.md ./output.md || true
 
-      - name: Read Jenkins output.md
-        if: always()
-        run: |
-          if [ ! -f output.md ]; then
-            echo "# Jenkins Output" > output.md
-            echo "" >> output.md
-            echo "_output.md not found_" >> output.md
-          fi
-
-          echo "JENKINS_OUTPUT<<EOF" >> $GITHUB_ENV
-          cat output.md >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
       - name: Write CI Summary
         if: always()
         run: |
@@ -170,7 +157,13 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Jenkins Output" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "$JENKINS_OUTPUT" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f output.md ]; then
+            cat output.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_output.md not found_" >> $GITHUB_STEP_SUMMARY
+          fi
+      
 
       - name: Dump Jenkins Console Log
         if: always()

@@ -26,10 +26,26 @@ pipeline {
       }
     }
 
+    stage('Build Backend') {
+      steps {
+        sh '''
+          mvn -B -DskipTests clean package
+        '''
+      }
+    }
+
     stage('Start Backend') {
       steps {
         sh '''
-          nohup mvn spring-boot:run > backend.log 2>&1 &
+          echo "Starting backend from fat jar..."
+
+          nohup java \
+            -Dspring.profiles.active=test \
+            -jar target/*.jar \
+            --server.port=8000 \
+            --todo.repository.type=memory \
+            > backend.log 2>&1 &
+
           echo $! > backend.pid
         '''
       }
@@ -49,11 +65,18 @@ pipeline {
     stage('Smoke Test') {
       steps {
         sh '''
-          echo "Waiting for backend..."
+          echo "Waiting for backend (test profile, port 8000)..."
           for i in {1..30}; do
-            curl -sf http://localhost:8080 && break
+            if curl -sf http://localhost:8000/api/ping | grep -q "^pong$"; then
+              echo "Backend is alive on port 8000 (pong received)"
+              break
+            fi
             sleep 2
           done
+          if [ "$i" -eq 30 ]; then
+            echo "Backend did not become ready on port 8000"
+            exit 1
+          fi
 
           echo "Waiting for frontend..."
           for i in {1..30}; do

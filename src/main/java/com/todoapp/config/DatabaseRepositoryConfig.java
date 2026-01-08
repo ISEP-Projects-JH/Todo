@@ -3,13 +3,20 @@ package com.todoapp.config;
 import com.todoapp.repository.TagRepository;
 import com.todoapp.repository.TodoRepository;
 import com.todoapp.repository.persistence.*;
-import com.todoapp.service.DashboardService;
-import com.todoapp.service.TodoService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 @Configuration
-public class AppConfig {
+@ConditionalOnProperty(
+        name = "todo.repository.type",
+        havingValue = "database",
+        matchIfMissing = true
+)
+@Import(DataSourceAutoConfiguration.class)
+public class DatabaseRepositoryConfig {
 
     @Bean
     public TodoRepository todoRepository(
@@ -27,15 +34,5 @@ public class AppConfig {
     @Bean
     public TagRepository tagRepository(TagDTORepository tagDTORepository) {
         return new DataBaseTagRepository(tagDTORepository);
-    }
-
-    @Bean
-    public TodoService todoService(TodoRepository todoRepository, TagRepository tagRepository) {
-        return new TodoService(todoRepository, tagRepository);
-    }
-
-    @Bean
-    public DashboardService dashboardService(TodoRepository todoRepository) {
-        return new DashboardService(todoRepository);
     }
 }
