@@ -25,6 +25,10 @@ package "com.todoapp.repository" {
     java.util.Optional<Todo> findByTitle(String)
     java.util.List<Todo> findAll()
     void deleteById(Long)
+    java.util.List<Todo> searchByText(String)
+    java.util.List<Todo> findBefore(java.time.LocalDateTime, int)
+    java.util.List<Todo> findByTag(String)
+    void deleteAll()
   }
 
   interface TagRepository {
@@ -32,6 +36,7 @@ package "com.todoapp.repository" {
     java.util.Optional<Tag> findById(Long)
     java.util.Optional<Tag> findByName(String)
     java.util.List<Tag> findAll()
+    void deleteAll()
   }
 }
 
@@ -40,9 +45,14 @@ package "com.todoapp.service" {
     Todo createTodo(String title, String description, java.util.Set<String> tagNames)
     Todo updateTodoByTitle(String oldTitle, String newTitle, String description, java.util.Set<String> tagNames)
     void deleteByTitle(String title)
+    void clearAll()
     Todo markCompletedByTitle(String title)
     Todo markPendingByTitle(String title)
     java.util.List<Todo> listTodos()
+    java.util.List<Todo> searchTodos(String query)
+    java.util.List<Todo> listTodosBefore(java.time.LocalDateTime before)
+    java.util.List<Todo> listTodosBefore(java.time.LocalDateTime before, int limit)
+    java.util.List<Todo> findByTag(String tag)
     Todo addTags(String title, java.util.Set<String> tagNames)
     Todo removeTags(String title, java.util.Set<String> tagNames)
     int countCompleted()
