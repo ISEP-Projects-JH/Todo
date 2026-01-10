@@ -7,7 +7,7 @@ on:
       - 'Jenkinsfile'
       - 'job.xml'
       - 'Dockerfile'
-      - 'scripts/**'
+      - 'scripts/auto_test.py'
   workflow_dispatch:
 
 jobs:
