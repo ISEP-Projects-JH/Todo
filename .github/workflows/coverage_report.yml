@@ -1,0 +1,59 @@
+name: Coverage Report
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - ".github/workflows/coverage_report.yml"
+      - "src/**"
+      - "pom.xml"
+      - "scripts/coverage_gen.py"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - ".github/workflows/coverage_report.yml"
+      - "src/**"
+      - "pom.xml"
+      - "scripts/coverage_gen.py"
+
+jobs:
+  coverage:
+    name: Generate Coverage Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Ensure python3 >= 3.10
+        run: |
+          if command -v python3 >/dev/null 2>&1; then
+            python3 --version
+            PY_VER=$(python3 --version | awk '{print $2}')
+            PY_MAJOR=$(echo "$PY_VER" | cut -d. -f1)
+            PY_MINOR=$(echo "$PY_VER" | cut -d. -f2)
+
+            if [ "$PY_MAJOR" -gt 3 ] || { [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -ge 10 ]; }; then
+              echo "System python3 is sufficient"
+              exit 0
+            fi
+          fi
+
+          echo "Installing python3 via apt"
+          sudo apt-get update
+          sudo apt-get install -y python3
+
+      - name: Run tests with coverage
+        run: |
+          mvn -B clean verify
+
+      - name: Generate coverage summary
+        run: |
+          python3 -m scripts.coverage_gen >> $GITHUB_STEP_SUMMARY
